@@ -1,47 +1,67 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import time
+from datetime import datetime
 
+# --- CONFIGURATION ---
 st.set_page_config(page_title="GesundTech Manufacturer Portal", layout="wide")
 
-# Branding
-st.sidebar.title("GesundTech")
-st.sidebar.image("https://via.placeholder.com/150?text=GesundTech+Logo") # Replace with your logo
-st.sidebar.info("Model: D101 Apex Series")
+st.title("GesundTech D101 Apex: Digital Twin Portal")
+st.markdown("### Real-Time Fleet Analytics & Predictive Maintenance")
 
-# Main Header
-st.title("Digital Twin Fleet Dashboard")
+# --- SIDEBAR CONTROL ---
+st.sidebar.header("Asset Controls")
+device_id = st.sidebar.selectbox("Select Device", ["D101-SN882", "D101-SN904"])
+simulate_issue = st.sidebar.toggle("Simulate Tubing Occlusion")
 
-# Top Level Metrics
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Active Units", "1,240", "Online")
-m2.metric("Critical Alerts", "3", "-1", delta_color="inverse")
-m3.metric("Avg. Motor Health", "94%", "Stable")
-m4.metric("Pending Updates", "12", "D101-v2.1")
+# --- DATA GENERATION ENGINE ---
+def get_telemetry():
+    """Generates a row of data based on the toggle state."""
+    if not simulate_issue:
+        curr, pres, flow = 150 + np.random.normal(0, 2), 5 + np.random.normal(0, 0.1), 20.0
+        status = "✅ Healthy"
+        health_score = 98
+    else:
+        curr, pres, flow = 420 + np.random.normal(0, 5), 22 + np.random.normal(0, 1), 4.2
+        status = "⚠️ WARNING: Occlusion"
+        health_score = 35
+    
+    return curr, pres, flow, status, health_score
 
-# Digital Twin Simulation
+# --- DASHBOARD LAYOUT ---
+col1, col2, col3, col4 = st.columns(4)
+
+# Placeholder for real-time updates
+curr_val, pres_val, flow_val, status_val, health_val = get_telemetry()
+
+col1.metric("Motor Current", f"{curr_val:.1f} mA")
+col2.metric("Line Pressure", f"{pres_val:.1f} psi")
+col3.metric("Flow Rate", f"{flow_val:.1f} mL/h")
+col4.metric("Asset Health", f"{health_val}%")
+
 st.divider()
-col_left, col_right = st.columns([1, 2])
 
-with col_left:
-    st.subheader("Asset Twin: D101-SN882")
-    # You can embed a 3D model here later using pythreejs
-    st.image("https://via.placeholder.com/300x400?text=3D+Pump+Model", caption="Live Twin State")
-    if st.button("Run Diagnostic"):
-        st.write("Diagnostic complete: All systems nominal.")
+# --- LIVE CHARTING ---
+st.subheader("Live Asset Telemetry")
+if 'history' not in st.session_state:
+    st.session_state.history = pd.DataFrame(columns=['Time', 'Current', 'Pressure'])
 
-with col_right:
-    st.subheader("Real-Time Telemetry (Simulated)")
-    # Simulating pump data
-    chart_data = pd.DataFrame(np.random.randn(20, 2), columns=['Flow Rate (mL/h)', 'Motor Current (mA)'])
-    st.line_chart(chart_data)
+# Create a loop to update the dashboard
+new_data = pd.DataFrame({
+    'Time': [datetime.now().strftime("%H:%M:%S")],
+    'Current': [curr_val],
+    'Pressure': [pres_val]
+})
 
-# Predictive Maintenance Table
-st.subheader("Predictive Maintenance Schedule")
-data = {
-    "Pump ID": ["D101-102", "D101-405", "D101-009"],
-    "Hospital": ["City Med", "Apollo", "General Hosp"],
-    "Predicted Issue": ["Motor Strain", "Battery Degradation", "Flow Anomaly"],
-    "Confidence": ["92%", "88%", "75%"]
-}
-st.table(data)
+st.session_state.history = pd.concat([st.session_state.history, new_data]).tail(20)
+st.line_chart(st.session_state.history.set_index('Time'))
+
+if simulate_issue:
+    st.error(f"**Action Required:** High pressure detected in {device_id}. Predictive model suggests mechanical strain.")
+else:
+    st.success(f"**System Nominal:** {device_id} is operating within safety parameters.")
+
+# Auto-refresh the page
+time.sleep(2)
+st.rerun()
