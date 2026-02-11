@@ -14,13 +14,13 @@ This project addresses these challenges by creating a **Digital Shadow** of a me
 - **Manufacturer Dashboard:** A professional-grade portal for fleet-wide monitoring, built with **Streamlit**.
 - **Fault Injection:** Toggle-based simulation of tubing occlusions to test system response and alerting accuracy.
 
-## 🛠️ Tech Stack
+## Tech Stack
 - **Language:** Python 3.9+
 - **Simulation/Modeling:** NumPy, Pandas
 - **Web Framework:** Streamlit (for the Digital Twin Dashboard)
 - **Deployment:** GitHub & Streamlit Cloud
 
-## 📂 Project Structure
+## Project Structure
 ```text
 ├── app.py              # Main Streamlit Dashboard (Manufacturer Portal)
 ├── simulation.py       # The In-silico Virtual Sensor Engine
