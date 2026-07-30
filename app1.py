@@ -39,7 +39,7 @@ with col_right:
 # Predictive Maintenance Table
 st.subheader("Predictive Maintenance Schedule")
 data = {
-    "Pump ID": ["D101-102", "D101-405", "D101-009"],
+    "Pump ID": ["D101-102", "D101-400", "D101-009"],
     "Hospital": ["City Med", "Apollo", "General Hosp"],
     "Predicted Issue": ["Motor Strain", "Battery Degradation", "Flow Anomaly"],
     "Confidence": ["92%", "88%", "75%"]
